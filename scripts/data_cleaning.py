@@ -34,3 +34,17 @@ def find_missing_values(df):
     print(f"From {df.shape[1]} columns selected, there are {missing_data_summary_table.shape[0]} columns with missing values.")
 
     return missing_data_summary_table
+
+def boxPlotForDetectOutliers(data,column_names):
+    """
+       Plots box plots for numerical columns to detect outliers.
+
+       Parameters:
+           data (pd.DataFrame): The dataset containing numerical columns.
+           column_names (list): List of column names to plot box plots.
+       """
+    for column in column_names:
+        sns.boxplot(data=data[column])
+        plt.title(f"Box Plot of {column}")
+        plt.show()
+
