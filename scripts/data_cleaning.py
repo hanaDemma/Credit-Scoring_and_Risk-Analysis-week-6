@@ -48,3 +48,22 @@ def boxPlotForDetectOutliers(data,column_names):
         plt.title(f"Box Plot of {column}")
         plt.show()
 
+def remove_outliers_winsorization(data,column_names):
+    """
+        Removes outliers from specified columns using winsorization (clipping).
+
+        Parameters:
+            data (pd.DataFrame): The dataset containing numerical columns.
+            column_names (list): List of column names to apply winsorization.
+
+        Returns:
+            pd.DataFrame: Dataset with outliers clipped.
+        """
+    for column_name in column_names:
+        q1 = data[column_name].quantile(0.25)
+        q3 = data[column_name].quantile(0.75)
+        iqr = q3 - q1
+        lower_bound = q1 - 1.5 * iqr
+        upper_bound = q3 + 1.5 * iqr
+        data[column_name] = data[column_name].clip(lower_bound, upper_bound)
+    return data
