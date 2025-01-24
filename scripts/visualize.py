@@ -22,4 +22,31 @@ def visualize_numerical_features(dataframe):
     plt.tight_layout()
     plt.show()
 
-    
+
+def visualize_categorical_features(dataframe):
+    # Check for empty DataFrame
+    if dataframe.empty:
+        print("The DataFrame is empty.")
+        return
+
+    categorical_cols = dataframe.select_dtypes(include=['object']).columns
+
+    if len(categorical_cols) == 0:
+        print("No categorical columns found.")
+        return
+
+    sns.set(style='whitegrid')
+
+    # Create a figure to hold the subplots for count plots
+    plt.figure(figsize=(15, 4 * len(categorical_cols)))
+
+    # Count plots for categorical features
+    for i, col in enumerate(categorical_cols, 1):
+        plt.subplot(len(categorical_cols), 1, i)
+        sns.countplot(data=dataframe, x=col)
+        plt.title(f'Distribution of {col}', fontsize=16)
+        plt.xlabel(col, fontsize=14)
+        plt.ylabel('Count', fontsize=14)
+
+    plt.tight_layout()
+    plt.show()
