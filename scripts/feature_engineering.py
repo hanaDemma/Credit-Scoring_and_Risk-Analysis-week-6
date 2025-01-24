@@ -60,3 +60,4 @@ def encodingCategoricalVariables(new_dataframe):
     new_dataframe_encoded = pd.concat([new_dataframe.reset_index(drop=True), encoded_new_dataframe], axis=1)
     new_dataframe_encoded.drop(columns=categorical_columns, inplace=True)
     return new_dataframe_encoded
+
