@@ -50,3 +50,19 @@ def visualize_categorical_features(dataframe):
 
     plt.tight_layout()
     plt.show()
+
+
+
+def correlation_analysis(dataframe):
+    numerical_cols = dataframe.select_dtypes(include=['number']).columns
+    dataframe = dataframe[numerical_cols[1:]]
+    correlation_matrix = dataframe.corr()
+
+    # Set plot style
+    sns.set(style='whitegrid')
+
+    # Create a heatmap to visualize the correlation matrix
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, fmt=".2f", cmap='coolwarm', square=True, cbar=True)
+    plt.title('Correlation Matrix', fontsize=16)
+    plt.show()
