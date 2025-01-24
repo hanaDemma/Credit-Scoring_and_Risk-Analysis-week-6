@@ -6,21 +6,30 @@ This project aims to develop a **credit scoring model** for Bati Bank to enable 
 
 ## Folder Structure 
 CREDIT_SCORING_AND_RISK_ANALYSIS-WEEK6/
-|
+│
 ├── .github/
+│
 ├── .week6/
-├── . notebooks/
-|   ├── exploratory_analysis.ipynb
-│   └── README.md 
-├── . scripts/ 
-|    ├── data_cleaning.py
-│    └── data_loader.py 
-|    └── feature_engineering.py 
-├── . src/
+│
+├── .notebooks/
+│   ├── exploratory_analysis.ipynb
+│   └── README.md
+│
+├── .scripts/
+│   ├── data_cleaning.py
+│   ├── data_loader.py
+│   └── feature_engineering.py
+│
+├── .src/
+│
 ├── .tests/
-├── .gitignore 
-├── README.md 
-└── requirements.txt 
+│
+├── .gitignore
+│
+├── README.md
+│
+└── requirements.txt
+
 
 ## Features
 
