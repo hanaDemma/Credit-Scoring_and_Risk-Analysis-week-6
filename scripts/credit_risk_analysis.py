@@ -77,6 +77,8 @@ def visualizeRFMSscore(rfms_new_dataframe_encoded):
     plt.ylabel('Frequency')
 
     plt.show()
+import pandas as pd
+import numpy as np
 
 def calculate_woe_iv(data, feature, target):
     """
@@ -88,7 +90,8 @@ def calculate_woe_iv(data, feature, target):
            target (str): The target variable column.
 
        Returns:
-           pd.DataFrame: DataFrame with unique values, WoE, and IV for the feature.
+           pd.DataFrame: DataFrame with unique values, WoE, IV, and total goods/bads.
+           int, int: Total number of goods (target=1) and bads (target=0).
        """
     lst = []
     unique_values = data[feature].unique()
@@ -109,4 +112,13 @@ def calculate_woe_iv(data, feature, target):
         iv = (dist_good - dist_bad) * woe
         lst.append({'Value': val, 'WoE': woe, 'IV': iv})
 
-    return pd.DataFrame(lst)
+    # Convert to DataFrame
+    woe_iv_df = pd.DataFrame(lst)
+
+    # Add totals to the output
+    woe_iv_df['Total_Good'] = total_good
+    woe_iv_df['Total_Bad'] = total_bad
+
+    return total_good, total_bad
+
+
