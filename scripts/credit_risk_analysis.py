@@ -1,124 +1,212 @@
+from sklearn.model_selection import train_test_split
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.metrics import classification_report, accuracy_score, roc_auc_score
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+import joblib
 
-import numpy as np
-import pandas as pd
 
-def calculateRFMSscores(new_dataframe_encoded, threshold=0):
-    """
-    Calculates RFMS (Recency, Frequency, Monetary, Seasonality) scores for customers and assigns classifications.
+def prepare_for_model(data):
+    X = data.drop(
+        ['Month', 'TransactionStartTime', 'TransactionId', 'AccountId', 'CustomerId', 'RiskCategory', 'BatchId',
+         'SubscriptionId'], axis=1)  # Exclude identifiers and target
+    X = data[['TotalRFMS', 'ProviderId_ProviderId_2', 'ProviderId_ProviderId_3',
+              'ProviderId_ProviderId_4', 'ProviderId_ProviderId_5', 'ProviderId_ProviderId_6',
+              'ProductId_ProductId_10', 'ProductId_ProductId_11', 'ProductId_ProductId_12',
+              'ProductId_ProductId_13', 'ProductId_ProductId_14', 'ProductId_ProductId_15',
+              'ProductId_ProductId_16', 'ProductId_ProductId_19', 'ProductId_ProductId_2',
+              'ProductId_ProductId_20', 'ProductId_ProductId_21', 'ProductId_ProductId_22',
+              'ProductId_ProductId_23', 'ProductId_ProductId_24', 'ProductId_ProductId_27',
+              'ProductId_ProductId_3', 'ProductId_ProductId_4', 'ProductId_ProductId_5',
+              'ProductId_ProductId_6', 'ProductId_ProductId_7', 'ProductId_ProductId_8',
+              'ProductId_ProductId_9', 'ProductCategory_data_bundles', 'ProductCategory_financial_services',
+              'ProductCategory_movies', 'ProductCategory_other', 'ProductCategory_ticket',
+              'ProductCategory_transport', 'ProductCategory_tv', 'ProductCategory_utility_bill',
+              'ChannelId_ChannelId_2', 'ChannelId_ChannelId_3', 'ChannelId_ChannelId_5',
+              'Amount', 'Value', 'PricingStrategy', 'FraudResult', 'Total_Transaction_Amount',
+              'Average_Transaction_Amount', 'Transaction_Count', 'Std_Deviation_Transaction_Amount', 'Transaction_Hour',
+              'Transaction_Day', 'Transaction_Month', 'Transaction_Year']]
+    
+    X = data[['TotalRFMS', 'ProviderId_ProviderId_2', 'ProviderId_ProviderId_3',
+              'ProviderId_ProviderId_4', 'ProviderId_ProviderId_5', 'ProviderId_ProviderId_6',
+              'ProductId_ProductId_10', 'ProductId_ProductId_11', 'ProductId_ProductId_12',
+              'ProductId_ProductId_13', 'ProductId_ProductId_14', 'ProductId_ProductId_15',
+              'ProductId_ProductId_16', 'ProductId_ProductId_19', 'ProductId_ProductId_2',
+              'ProductId_ProductId_20', 'ProductId_ProductId_21', 'ProductId_ProductId_22',
+              'ProductId_ProductId_23', 'ProductId_ProductId_24', 'ProductId_ProductId_27',
+              'ProductId_ProductId_3', 'ProductId_ProductId_4', 'ProductId_ProductId_5',
+              'ProductId_ProductId_6', 'ProductId_ProductId_7', 'ProductId_ProductId_8',
+              'ProductId_ProductId_9', 'ProductCategory_data_bundles', 'ProductCategory_financial_services',
+              'ProductCategory_movies', 'ProductCategory_other', 'ProductCategory_ticket',
+              'ProductCategory_transport', 'ProductCategory_tv', 'ProductCategory_utility_bill',
+              'ChannelId_ChannelId_2', 'ChannelId_ChannelId_3', 'ChannelId_ChannelId_5',
+              'Amount', 'Value', 'PricingStrategy', 'FraudResult', 'Total_Transaction_Amount',
+              'Average_Transaction_Amount', 'Transaction_Count', 'Transaction_Hour',
+              'Transaction_Day', 'Transaction_Month', 'Transaction_Year']]
+    y = data['RiskCategory'].map({'Good': 0, 'Bad': 1})  # Binary mapping for classification
 
-    Parameters:
-        new_dataframe_encoded (pd.DataFrame): Dataset with encoded features.
-        threshold (float): Threshold to classify customers as 'good' or 'bad' based on RFMS scores.
 
-    Returns:
-        pd.DataFrame: Dataset with calculated RFMS scores and classifications.
-    """
-    # Ensure TransactionStartTime is in datetime format
-    new_dataframe_encoded['TransactionStartTime'] = pd.to_datetime(new_dataframe_encoded['TransactionStartTime'])
+    # Split the dataset
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train.to_csv('docs/X_train_data.csv')
+    y_train.to_csv('docs/y_train_data.csv')
+    X_test.to_csv('docs/X_test_data.csv')
+    y_test.to_csv('docs/y_test_data.csv')
+    return X_train, X_test, y_train, y_test, X, y
 
-    # Set the current date (or use the last date in your dataset)
-    current_date = new_dataframe_encoded['TransactionStartTime'].max()
 
-    # Recency: Number of days since the last transaction
-    recency_new_dataframe_encoded = new_dataframe_encoded.groupby('CustomerId').agg(
-        {'TransactionStartTime': lambda x: (current_date - x.max()).days}
+def modeling(X_train, X_test, y_train, y_test,results):
+    # 1. Logistic Regression
+    log_model = LogisticRegression(max_iter=1000, C=0.1, penalty='l2')
+    log_model.fit(X_train, y_train)
+    log_preds = log_model.predict(X_test)
+    log_probs = log_model.predict_proba(X_test)[:, 1]
+
+    results['Logistic Regression'] = {
+        'Accuracy': accuracy_score(y_test, log_preds),
+        'ROC AUC': roc_auc_score(y_test, log_probs),
+        'Classification Report': classification_report(y_test, log_preds,zero_division=1)
+    }
+    # Save the model
+    joblib.dump(log_model, 'model/logistic_regression_model.pkl')
+
+    # 2. Random Forest
+    rf_model = RandomForestClassifier(max_depth=5, min_samples_split=10, min_samples_leaf=5, random_state=42)
+    rf_model.fit(X_train, y_train)
+    rf_preds = rf_model.predict(X_test)
+    rf_probs = rf_model.predict_proba(X_test)[:, 1]
+
+    results['Random Forest'] = {
+        'Accuracy': accuracy_score(y_test, rf_preds),
+        'ROC AUC': roc_auc_score(y_test, rf_probs),
+        'Classification Report': classification_report(y_test, rf_preds,zero_division=1)
+    }
+    # Save the model
+    joblib.dump(rf_model, 'model/random_forest_model.pkl')
+
+    # 3. Decision Tree
+    dt_model = DecisionTreeClassifier(max_depth=3, min_samples_split=10, min_samples_leaf=5, random_state=42)
+    dt_model.fit(X_train, y_train)
+    dt_preds = dt_model.predict(X_test)
+    dt_probs = dt_model.predict_proba(X_test)[:, 1]
+
+    results['Decision Tree'] = {
+        'Accuracy': accuracy_score(y_test, dt_preds),
+        'ROC AUC': roc_auc_score(y_test, dt_probs),
+        'Classification Report': classification_report(y_test, dt_preds, zero_division=1)
+    }
+    # Save the model
+    joblib.dump(dt_model, 'model/decision_tree_model.pkl')
+
+    # 4. Gradient Boosting Machine
+    gb_model = GradientBoostingClassifier(n_estimators=100, max_depth=3, learning_rate=0.1, min_samples_split=10,
+                                          random_state=42)
+    gb_model.fit(X_train, y_train)
+    gb_preds = gb_model.predict(X_test)
+    gb_probs = gb_model.predict_proba(X_test)[:, 1]
+
+    results['Gradient Boosting'] = {
+        'Accuracy': accuracy_score(y_test, gb_preds),
+        'ROC AUC': roc_auc_score(y_test, gb_probs),
+        'Classification Report': classification_report(y_test, gb_preds, zero_division=1)
+    }
+
+    # Save the model
+    joblib.dump(gb_model, 'model/gradient_boosting_model.pkl')
+
+    return results, log_preds, dt_preds, gb_preds, rf_preds
+
+
+
+def tune_models(X_train, y_train, X_test, y_test, search_method='grid', n_iter=10):
+    param_grids = {
+        'Gradient Boosting': {
+            'n_estimators': [100, 200, 500],
+            'learning_rate': [0.01, 0.1, 0.2],
+            'max_depth': [3, 5, 7],
+            'subsample': [0.8, 0.9, 1.0]
+        }
+    }
+
+    # Initialize the models
+    models = {
+        'Gradient Boosting': GradientBoostingClassifier()
+    }
+
+    # Choose the search method
+    if search_method == 'grid':
+        search_class = GridSearchCV
+    elif search_method == 'random':
+        search_class = RandomizedSearchCV
+    else:
+        raise ValueError("search_method should be 'grid' or 'random'")
+
+    # Store the results for each model
+    results = {}
+
+    # Iterate through each model and perform hyperparameter tuning
+    for model_name, model in models.items():
+        print(f"Performing hyperparameter tuning for {model_name}...")
+
+        # Select the appropriate search class
+        param_grid = param_grids[model_name]
+
+        # Perform hyperparameter tuning
+        search = search_class(model, param_grid, cv=5, n_jobs=-1, n_iter=n_iter if search_method == 'random' else None, scoring='accuracy')
+        search.fit(X_train, y_train)
+
+        # Store the best model, parameters, and score
+        best_model = search.best_estimator_
+        best_params = search.best_params_
+        best_score = search.best_score_
+
+        # Evaluate on the test set
+        y_pred = best_model.predict(X_test)
+        report = classification_report(y_test, y_pred)
+
+        # Store the results in the dictionary
+        results[model_name] = {
+            'best_model': best_model,
+            'best_params': best_params,
+            'best_score': best_score,
+            'classification_report': report
+        }
+
+        print(f"Best parameters for {model_name}: {best_params}")
+        print(f"Best score for {model_name}: {best_score}")
+        print(f"Classification report for {model_name}:\n{report}")
+
+    return 
+
+def save_best_model(results,X_train, y_train, X_test, y_test):
+    best_params = {
+        'subsample': 0.9,
+        'n_estimators': 500,
+        'max_depth': 7,
+        'learning_rate': 0.1
+    }
+
+    # Initialize the Gradient Boosting model with the best parameters
+    gb_model = GradientBoostingClassifier(
+        n_estimators=best_params['n_estimators'],
+        max_depth=best_params['max_depth'],
+        learning_rate=best_params['learning_rate'],
+        subsample=best_params['subsample'],
+        random_state=42
     )
-    recency_new_dataframe_encoded.rename(columns={'TransactionStartTime': 'Recency'}, inplace=True)
 
-    # Frequency: Count of transactions per customer
-    frequency_new_dataframe_encoded = new_dataframe_encoded.groupby('CustomerId').agg({'TransactionId': 'count'})
-    frequency_new_dataframe_encoded.rename(columns={'TransactionId': 'Frequency'}, inplace=True)
+    gb_model.fit(X_train, y_train)
+    gb_preds = gb_model.predict(X_test)
+    gb_probs = gb_model.predict_proba(X_test)[:, 1]
 
-    # Monetary: Sum of transaction amounts per customer
-    monetary_new_dataframe_encoded = new_dataframe_encoded.groupby('CustomerId').agg({'Amount': 'sum'})
-    monetary_new_dataframe_encoded.rename(columns={'Amount': 'Monetary'}, inplace=True)
+    results['Gradient Boosting'] = {
+        'Accuracy': accuracy_score(y_test, gb_preds),
+        'ROC AUC': roc_auc_score(y_test, gb_probs),
+        'Classification Report': classification_report(y_test, gb_preds, zero_division=1)
+    }
 
-    # Seasonality: Average season (quarter) of transactions per customer
-    new_dataframe_encoded['Season'] = new_dataframe_encoded['TransactionStartTime'].dt.quarter
-    seasonality_new_dataframe_encoded = new_dataframe_encoded.groupby('CustomerId').agg({'Season': 'mean'})
-    seasonality_new_dataframe_encoded.rename(columns={'Season': 'Seasonality'}, inplace=True)
-
-    # Merge the dataframes into a single dataframe
-    rfms_new_dataframe_encoded = recency_new_dataframe_encoded.merge(frequency_new_dataframe_encoded, on='CustomerId')
-    rfms_new_dataframe_encoded = rfms_new_dataframe_encoded.merge(monetary_new_dataframe_encoded, on='CustomerId')
-    rfms_new_dataframe_encoded = rfms_new_dataframe_encoded.merge(seasonality_new_dataframe_encoded, on='CustomerId')
-
-    # Calculate RFMS Score
-    rfms_new_dataframe_encoded['RFMS_Score'] = (
-        rfms_new_dataframe_encoded['Recency'] * -1 +  # Lower recency is better
-        rfms_new_dataframe_encoded['Frequency'] +
-        rfms_new_dataframe_encoded['Monetary'] +
-        rfms_new_dataframe_encoded['Seasonality']
-    )
-
-    # Classification: Assign 'good' or 'bad' based on the threshold
-    rfms_new_dataframe_encoded['RiskCategory'] = rfms_new_dataframe_encoded['RFMS_Score'].apply(
-        lambda score: 'good' if score >= threshold else 'bad'
-    )
-
-    return rfms_new_dataframe_encoded
-
-def visualizeRFMSscore(rfms_new_dataframe_encoded):
-    """
-       Visualizes RFMS scores as a histogram.
-
-       Parameters:
-           rfms_new_dataframe_encoded (pd.DataFrame): Dataset containing RFMS scores.
-       """
-    # Plot the histogram of RFMS scores
-    plt.figure(figsize=(8,6))
-    plt.hist(rfms_new_dataframe_encoded['RFMS_Score'], bins=30, color='grey', alpha=0.7)
-    plt.title('RFMS Score Distribution')
-    plt.xlabel('RFMS Score')
-    plt.ylabel('Frequency')
-
-    plt.show()
-import pandas as pd
-import numpy as np
-
-def calculate_woe_iv(data, feature, target):
-    """
-       Calculates Weight of Evidence (WoE) and Information Value (IV) for a given feature.
-
-       Parameters:
-           data (pd.DataFrame): Dataset containing the feature and target variable.
-           feature (str): The feature column to analyze.
-           target (str): The target variable column.
-
-       Returns:
-           pd.DataFrame: DataFrame with unique values, WoE, IV, and total goods/bads.
-           int, int: Total number of goods (target=1) and bads (target=0).
-       """
-    lst = []
-    unique_values = data[feature].unique()
-    total_good = len(data[data[target] == 1])
-    total_bad = len(data[data[target] == 0])
-
-    for val in unique_values:
-        dist_good = len(data[(data[feature] == val) & (data[target] == 1)]) / total_good if total_good != 0 else 0
-        dist_bad = len(data[(data[feature] == val) & (data[target] == 0)]) / total_bad if total_bad != 0 else 0
-
-        # Handle cases where dist_good or dist_bad is zero
-        if dist_good == 0:
-            dist_good = 0.0001
-        if dist_bad == 0:
-            dist_bad = 0.0001
-
-        woe = np.log(dist_good / dist_bad)
-        iv = (dist_good - dist_bad) * woe
-        lst.append({'Value': val, 'WoE': woe, 'IV': iv})
-
-    # Convert to DataFrame
-    woe_iv_df = pd.DataFrame(lst)
-
-    # Add totals to the output
-    woe_iv_df['Total_Good'] = total_good
-    woe_iv_df['Total_Bad'] = total_bad
-
-    return total_good, total_bad
-
-
+    # Save the model
+    joblib.dump(gb_model, '../models/gradient_boosting_model.pkl')
+    return gb_preds
