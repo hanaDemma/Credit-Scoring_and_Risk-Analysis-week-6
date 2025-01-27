@@ -112,13 +112,13 @@ def calculate_woe_iv(data, feature, target):
         iv = (dist_good - dist_bad) * woe
         lst.append({'Value': val, 'WoE': woe, 'IV': iv})
 
-    # Convert to DataFrame
-    woe_iv_df = pd.DataFrame(lst)
+    # # Convert to DataFrame
+    # woe_iv_df = pd.DataFrame(lst)
 
-    # Add totals to the output
-    woe_iv_df['Total_Good'] = total_good
-    woe_iv_df['Total_Bad'] = total_bad
+    # # Add totals to the output
+    # woe_iv_df['Total_Good'] = total_good
+    # woe_iv_df['Total_Bad'] = total_bad
 
-    return total_good, total_bad
+    return pd.DataFrame(lst)
 
 
