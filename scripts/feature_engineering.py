@@ -90,6 +90,54 @@ def null_value_imputing_KNN(data):
                             columns=data.select_dtypes(include=[np.number]).columns)
     return df_imputed
 
+
+def scaling(data):
+    numerical_columns = data.select_dtypes(include=['float64', 'int64']).columns
+    # Initialize MinMaxScaler
+    min_max_scaler = MinMaxScaler()
+
+    # Apply normalization
+    df_normalized = data.copy()  # Create a copy to avoid modifying the original DataFrame
+    df_normalized[numerical_columns] = min_max_scaler.fit_transform(data[numerical_columns])
+
+    return [df_normalized,numerical_columns]
+
+
+
+def Standardize(data,numerical_columns):
+    for col in numerical_columns:
+        min_val = data[col].min()
+        max_val = data[col].max()
+        data[col] = (data[col] - min_val) / (max_val - min_val)
+    return data
+
+def combine_rfms(df, customer_id_col):
+    recency = calculate_recency(df, customer_id_col, 'TransactionStartTime')
+    frequency = calculate_frequency(df, customer_id_col, 'TransactionId')
+    monetary = calculate_monetary(df, customer_id_col, 'Amount')
+    seasonality = calculate_seasonality(df, customer_id_col, 'TransactionStartTime')
+
+    rfms_df = pd.DataFrame({
+        'Recency': recency,
+        'Frequency': frequency,
+        'Monetary': monetary,
+        'Seasonality': seasonality
+    }).fillna(0)  # Fill NaN values with 0 for customers with no transactions
+    return rfms_df
+
+def classify_customers_by_rfms(rfms_df):
+    # Define thresholds using quantiles or other domain-specific rules
+    rfms_df['RiskScore'] = (
+        0.4 * pd.qcut(rfms_df['Recency'], 5, labels=False, duplicates='drop') +  # Recent transactions are better
+        0.3 * pd.qcut(rfms_df['Frequency'], 5, labels=False, duplicates='drop') +  # Frequent transactions are better
+        0.2 * pd.qcut(rfms_df['Monetary'], 5, labels=False, duplicates='drop') +   # Higher monetary value is better
+        0.1 * pd.qcut(rfms_df['Seasonality'], 5, labels=False, duplicates='drop')  # More active seasons are better
+    )
+
+    # Classify based on RiskScore: High score = Good (low risk), Low score = Bad (high risk)
+    rfms_df['RiskCategory'] = rfms_df['RiskScore'].apply(lambda x: 'Good' if x > 2.5 else 'Bad')
+    return rfms_df
+
 def calculate_recency(df, customer_id_col, transaction_time_col):
     current_date = df[transaction_time_col].max()  # Latest date in the dataset
     recency = df.groupby(customer_id_col)[transaction_time_col].apply(lambda x: (current_date - x.max()).days)
