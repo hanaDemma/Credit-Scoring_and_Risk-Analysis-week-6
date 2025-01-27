@@ -117,3 +117,65 @@ def modeling(X_train, X_test, y_train, y_test,results):
     joblib.dump(gb_model, 'model/gradient_boosting_model.pkl')
 
     return results, log_preds, dt_preds, gb_preds, rf_preds
+
+
+
+def tune_models(X_train, y_train, X_test, y_test, search_method='grid', n_iter=10):
+    param_grids = {
+        'Gradient Boosting': {
+            'n_estimators': [100, 200, 500],
+            'learning_rate': [0.01, 0.1, 0.2],
+            'max_depth': [3, 5, 7],
+            'subsample': [0.8, 0.9, 1.0]
+        }
+    }
+
+    # Initialize the models
+    models = {
+        'Gradient Boosting': GradientBoostingClassifier()
+    }
+
+    # Choose the search method
+    if search_method == 'grid':
+        search_class = GridSearchCV
+    elif search_method == 'random':
+        search_class = RandomizedSearchCV
+    else:
+        raise ValueError("search_method should be 'grid' or 'random'")
+
+    # Store the results for each model
+    results = {}
+
+    # Iterate through each model and perform hyperparameter tuning
+    for model_name, model in models.items():
+        print(f"Performing hyperparameter tuning for {model_name}...")
+
+        # Select the appropriate search class
+        param_grid = param_grids[model_name]
+
+        # Perform hyperparameter tuning
+        search = search_class(model, param_grid, cv=5, n_jobs=-1, n_iter=n_iter if search_method == 'random' else None, scoring='accuracy')
+        search.fit(X_train, y_train)
+
+        # Store the best model, parameters, and score
+        best_model = search.best_estimator_
+        best_params = search.best_params_
+        best_score = search.best_score_
+
+        # Evaluate on the test set
+        y_pred = best_model.predict(X_test)
+        report = classification_report(y_test, y_pred)
+
+        # Store the results in the dictionary
+        results[model_name] = {
+            'best_model': best_model,
+            'best_params': best_params,
+            'best_score': best_score,
+            'classification_report': report
+        }
+
+        print(f"Best parameters for {model_name}: {best_params}")
+        print(f"Best score for {model_name}: {best_score}")
+        print(f"Classification report for {model_name}:\n{report}")
+
+    return results
