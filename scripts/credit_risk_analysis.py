@@ -178,4 +178,35 @@ def tune_models(X_train, y_train, X_test, y_test, search_method='grid', n_iter=1
         print(f"Best score for {model_name}: {best_score}")
         print(f"Classification report for {model_name}:\n{report}")
 
-    return results
+    return 
+
+def save_best_model(results,X_train, y_train, X_test, y_test):
+    best_params = {
+        'subsample': 0.9,
+        'n_estimators': 500,
+        'max_depth': 7,
+        'learning_rate': 0.1
+    }
+
+    # Initialize the Gradient Boosting model with the best parameters
+    gb_model = GradientBoostingClassifier(
+        n_estimators=best_params['n_estimators'],
+        max_depth=best_params['max_depth'],
+        learning_rate=best_params['learning_rate'],
+        subsample=best_params['subsample'],
+        random_state=42
+    )
+
+    gb_model.fit(X_train, y_train)
+    gb_preds = gb_model.predict(X_test)
+    gb_probs = gb_model.predict_proba(X_test)[:, 1]
+
+    results['Gradient Boosting'] = {
+        'Accuracy': accuracy_score(y_test, gb_preds),
+        'ROC AUC': roc_auc_score(y_test, gb_probs),
+        'Classification Report': classification_report(y_test, gb_preds, zero_division=1)
+    }
+
+    # Save the model
+    joblib.dump(gb_model, '../models/gradient_boosting_model.pkl')
+    return gb_preds
