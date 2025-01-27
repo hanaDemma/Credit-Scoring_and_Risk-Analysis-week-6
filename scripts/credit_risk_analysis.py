@@ -6,6 +6,77 @@ import seaborn as sns
 import numpy as np
 import pandas as pd
 
+def aggregate_features(data,by):
+    aggregate_features = data.groupby(by).agg(
+        Total_Transaction_Amount=('Amount', 'sum'),
+        Average_Transaction_Amount=('Amount', 'mean'),
+        Transaction_Count=('TransactionId', 'count'),
+        Std_Deviation_Transaction_Amount=('Amount', 'std')
+    ).reset_index()
+
+    return aggregate_features
+
+
+def time_correction(data):
+    data['TransactionStartTime'] = pd.to_datetime(data['TransactionStartTime'])
+
+    # Extract features from the TransactionStartTime
+    data['Transaction_Hour'] = data['TransactionStartTime'].dt.hour
+    data['Transaction_Day'] = data['TransactionStartTime'].dt.day
+    data['Transaction_Month'] = data['TransactionStartTime'].dt.month
+    data['Transaction_Year'] = data['TransactionStartTime'].dt.year
+    return data
+
+def calculate_recency(df, customer_id_col, transaction_time_col):
+    current_date = df[transaction_time_col].max()  # Latest date in the dataset
+    recency = df.groupby(customer_id_col)[transaction_time_col].apply(lambda x: (current_date - x.max()).days)
+    return recency
+
+def calculate_frequency(df, customer_id_col, transaction_id_col):
+    frequency = df.groupby(customer_id_col)[transaction_id_col].nunique()
+    return frequency
+
+def calculate_monetary(df, customer_id_col, transaction_amount_col):
+    monetary = df.groupby(customer_id_col)[transaction_amount_col].sum()
+    return monetary
+
+def calculate_seasonality(df, customer_id_col, transaction_time_col):
+    # Count the number of transactions per month for each customer
+    df['Month'] = df[transaction_time_col].dt.to_period('M')  # Create a 'Month' column
+    seasonality = df.groupby([customer_id_col, 'Month']).size().reset_index(name='Transactions')
+    # Count the number of months with transactions to get a seasonality score
+    seasonality_score = seasonality.groupby(customer_id_col)['Transactions'].count()
+    return seasonality_score
+
+
+def combine_rfms(df, customer_id_col):
+    recency = calculate_recency(df, customer_id_col, 'TransactionStartTime')
+    frequency = calculate_frequency(df, customer_id_col, 'TransactionId')
+    monetary = calculate_monetary(df, customer_id_col, 'Amount')
+    seasonality = calculate_seasonality(df, customer_id_col, 'TransactionStartTime')
+
+    rfms_df = pd.DataFrame({
+        'Recency': recency,
+        'Frequency': frequency,
+        'Monetary': monetary,
+        'Seasonality': seasonality
+    }).fillna(0)  # Fill NaN values with 0 for customers with no transactions
+    return rfms_df
+
+
+def classify_customers_by_rfms(rfms_df):
+    # Define thresholds using quantiles or other domain-specific rules
+    rfms_df['RiskScore'] = (
+        0.4 * pd.qcut(rfms_df['Recency'], 5, labels=False, duplicates='drop') +  # Recent transactions are better
+        0.3 * pd.qcut(rfms_df['Frequency'], 5, labels=False, duplicates='drop') +  # Frequent transactions are better
+        0.2 * pd.qcut(rfms_df['Monetary'], 5, labels=False, duplicates='drop') +   # Higher monetary value is better
+        0.1 * pd.qcut(rfms_df['Seasonality'], 5, labels=False, duplicates='drop')  # More active seasons are better
+    )
+
+    # Classify based on RiskScore: High score = Good (low risk), Low score = Bad (high risk)
+    rfms_df['RiskCategory'] = rfms_df['RiskScore'].apply(lambda x: 'Good' if x > 2.5 else 'Bad')
+    return rfms_df
+
 def calculateRFMSscores(new_dataframe_encoded, threshold=0):
     """
     Calculates RFMS (Recency, Frequency, Monetary, Seasonality) scores for customers and assigns classifications.
