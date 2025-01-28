@@ -19,12 +19,17 @@ CREDIT_SCORING_AND_RISK_ANALYSIS-WEEK6/
 │   ├── data_cleaning.py
 │   ├── data_loader.py
 │   └── feature_engineering.py
+|   └── credit_risk_analysis.py
 │
 ├── .src/
 │
 ├── .tests/
 │
 ├── .gitignore
+│
+├── app.py
+│
+├── .Dockerfile
 │
 ├── README.md
 │
@@ -36,6 +41,8 @@ CREDIT_SCORING_AND_RISK_ANALYSIS-WEEK6/
 - **Data Preprocessing**: Handling missing values, feature engineering, and scaling.
 - **Feature Engineering**: Creation of aggregate features and time-based features.
 - **Encoding**: One-hot and label encoding of categorical variables.
+- **Modeling**: Implementation of various machine learning algorithms to predict credit scores.
+
 
 ## Technologies
 
