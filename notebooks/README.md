@@ -36,8 +36,50 @@ Feature engineering is the process of transforming raw data into features that c
 - **Encode Categorical Variables**:Convert categorical variables into a format that machine learning models can understand.
 - **Handle Missing Values**: Scale numerical features to ensure that all features contribute equally to the model
 
-
 # Development Instructions
 - Create a feature/task-3 Branch for development.
+- Commit progress regularly with clear and detailed commit messages.
+- Merge updates into the main branch via a Pull Request (PR).
+
+# Task 4: Default estimator and WoE binning
+## Overview
+The purpose of a credit scoring system is to classify borrowers into risk categories, such as high-risk or low-risk, based on their likelihood of defaulting on a loan. High-risk individuals have a greater probability of failing to repay their loans on time. In this task, this task focus on creating a default estimator that predicts the probability of default and also Weight of Evidence (WoE) binning.
+## Steps:
+1. **Construct a default estimator (proxy)**
+  - visualizing all transactions in the RFMS space, establish a boundary where users are classified as high and low RFMS scores.
+  - Assign all users the good and bad label
+2. **Perform Weight of Evidence (WoE) binning**
+
+# Development Instructions
+- Create a feature/task-4 Branch for development.
+- Commit progress regularly with clear and detailed commit messages.
+- Merge updates into the main branch via a Pull Request (PR).
+
+# Task 5: Modelling
+## Steps:
+1. **Model Selection and Training**
+      - Split the Data
+      - Choose Models
+      - Train the Models
+      - Hyperparameter Tunning
+2. **Model Evaluation**
+    - Assess model performance using **Accuracy**, **Precision**,**Recall**,**F1 Score**, **ROC-AUC**  metrics
+# Development Instructions
+- Create a feature/task-5 Branch for development.
+- Commit progress regularly with clear and detailed commit messages.
+- Merge updates into the main branch via a Pull Request (PR).
+
+# Task 6: Modelling Model Serving API Call
+
+- Create a REST API to serve the trained machine-learning models for real-time predictions.
+**Choose a framework**:Select a suitable framework for building REST APIs 
+**Load the model**:Use the model from Task 4 to load the trained machine-learning model.
+**Define API endpoints**: Create API endpoints that accept input data and return predictions.
+**Handle requests**:Implement logic to receive input data, preprocess it, and make predictions using the loaded model.
+**Return predictions**: Format the predictions and return them as a response to the API call.
+**Deployment**: Deploy the API to a web server or cloud platform.
+
+# Development Instructions
+- Create a feature/task-6 Branch for development.
 - Commit progress regularly with clear and detailed commit messages.
 - Merge updates into the main branch via a Pull Request (PR).
