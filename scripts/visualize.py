@@ -73,3 +73,23 @@ def plot_confusion_matrix(cm):
     plt.ylabel('True')
     plt.title('Confusion Matrix - Random Forest')
     plt.show()
+
+
+def plot_risk_scores(data):
+    plt.hist(data['RiskScore'], bins=10, color='blue', edgecolor='black')
+    plt.title('Distribution of Risk Scores')
+    plt.xlabel('Risk Score')
+    plt.ylabel('Frequency')
+    plt.axvline(x=2, color='red', linestyle='--', label='Threshold = 2') 
+    plt.legend()
+    plt.show()
+
+
+def plot_risk_counts(risk_counts):
+    # Plot the classification results
+    risk_counts.plot(kind='bar', color=['green', 'red'], alpha=0.7)
+    plt.title('Risk Category Distribution')
+    plt.xlabel('Risk Category')
+    plt.ylabel('Number of Customers')
+    plt.xticks(rotation=0)
+    plt.show()
