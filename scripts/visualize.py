@@ -123,3 +123,19 @@ def plot_product_category(data):
 
     plt.tight_layout()
     plt.show()
+
+def pricing_strategy(data):
+    # Histogram
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    sns.histplot(data['PricingStrategy'], bins=10, kde=True)
+    plt.title('Histogram of PricingStrategy')
+
+    # Box Plot
+    plt.subplot(1, 2, 2)
+    sns.boxplot(x=data['PricingStrategy'])
+    plt.title('Box Plot of PricingStrategy')
+
+    plt.show()
+
+    plt.show()
