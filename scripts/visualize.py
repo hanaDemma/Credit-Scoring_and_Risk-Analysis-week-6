@@ -93,3 +93,33 @@ def plot_risk_counts(risk_counts):
     plt.ylabel('Number of Customers')
     plt.xticks(rotation=0)
     plt.show()
+
+
+
+def plot_fraud_result(data):
+    # Histogram
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    sns.histplot(data['FraudResult'], bins=10, kde=True)
+    plt.title('Histogram of Values')
+
+    # Box Plot
+    plt.subplot(1, 2, 2)
+    sns.boxplot(x=data['FraudResult'])
+    plt.title('Box Plot of Values')
+
+
+def plot_product_category(data):
+    plt.figure(figsize=(12, 8))
+    # Histogram
+    plt.subplot(2, 1, 1)
+    sns.histplot(data['ProductCategory'], bins=10, kde=True)
+    plt.title('Histogram of ProductCategory')
+
+    # Box Plot
+    plt.subplot(2, 1, 2)
+    sns.boxplot(x=data['ProductCategory'])
+    plt.title('Box Plot of ProductCategory')
+
+    plt.tight_layout()
+    plt.show()
