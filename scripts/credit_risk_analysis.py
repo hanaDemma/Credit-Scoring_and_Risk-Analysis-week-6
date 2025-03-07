@@ -6,6 +6,9 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import classification_report, accuracy_score, roc_auc_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import joblib
+from matplotlib import cm
+import matplotlib.pyplot as plt
+
 
 
 def prepare_for_model(data):
@@ -119,66 +122,55 @@ def modeling(X_train, X_test, y_train, y_test,results):
     return results, log_preds, dt_preds, gb_preds, rf_preds
 
 
-
-def tune_models(X_train, y_train, X_test, y_test, search_method='grid', n_iter=10):
-    param_grids = {
-        'Gradient Boosting': {
-            'n_estimators': [100, 200, 500],
-            'learning_rate': [0.01, 0.1, 0.2],
-            'max_depth': [3, 5, 7],
-            'subsample': [0.8, 0.9, 1.0]
-        }
+# Function for hyperparameter tuning using RandomizedSearchCV
+def tune_random_forest(X_train, y_train):
+    rf = RandomForestClassifier(class_weight='balanced', random_state=42)
+    
+    param_grid = {
+        'n_estimators': [100, 200, 300],
+        'max_depth': [None, 10, 20],
+        'min_samples_split': [2, 5, 10],
+        'max_features': ['sqrt', 'log2']
     }
+    
+    rf_search = RandomizedSearchCV(
+        rf, param_distributions=param_grid, 
+        n_iter=20,  # Fewer iterations for speed
+        cv=5, 
+        scoring='roc_auc', 
+        n_jobs=-1, 
+        random_state=42
+    )
+    rf_search.fit(X_train, y_train)
+    print("Best Hyperparameters:", rf_search.best_params_)
+    print(f"Best ROC-AUC: {rf_search.best_score_:.3f}")
+    
+    return rf_search  # Return the RandomizedSearchCV object
 
-    # Initialize the models
-    models = {
-        'Gradient Boosting': GradientBoostingClassifier()
-    }
+# Function to plot feature importances for Random Forest
+def plot_feature_importance(model, X_train):
+    # Extract feature importances and features
+    feature_importance = model.feature_importances_
+    features = X_train.columns
 
-    # Choose the search method
-    if search_method == 'grid':
-        search_class = GridSearchCV
-    elif search_method == 'random':
-        search_class = RandomizedSearchCV
-    else:
-        raise ValueError("search_method should be 'grid' or 'random'")
+    # Sort feature importances in descending order
+    sorted_idx = feature_importance.argsort()
 
-    # Store the results for each model
-    results = {}
+    # Generate a colormap
+    cmap = cm.get_cmap('viridis', len(features))  # Use any colormap like 'viridis', 'plasma', etc.
+    colors = [cmap(i) for i in range(len(features))]
 
-    # Iterate through each model and perform hyperparameter tuning
-    for model_name, model in models.items():
-        print(f"Performing hyperparameter tuning for {model_name}...")
+    # Plot
+    plt.figure(figsize=(10, 6))
+    plt.barh(features[sorted_idx], feature_importance[sorted_idx], color=np.array(colors)[sorted_idx])
+    plt.xlabel("Feature Importance", fontsize=12)
+    plt.ylabel("Features", fontsize=12)
+    plt.title("Feature Importance (Random Forest)", fontsize=14, fontweight="bold")
+    plt.grid(axis='x', linestyle='--', alpha=0.6)
+    plt.tight_layout()
+    plt.show()
 
-        # Select the appropriate search class
-        param_grid = param_grids[model_name]
 
-        # Perform hyperparameter tuning
-        search = search_class(model, param_grid, cv=5, n_jobs=-1, n_iter=n_iter if search_method == 'random' else None, scoring='accuracy')
-        search.fit(X_train, y_train)
-
-        # Store the best model, parameters, and score
-        best_model = search.best_estimator_
-        best_params = search.best_params_
-        best_score = search.best_score_
-
-        # Evaluate on the test set
-        y_pred = best_model.predict(X_test)
-        report = classification_report(y_test, y_pred)
-
-        # Store the results in the dictionary
-        results[model_name] = {
-            'best_model': best_model,
-            'best_params': best_params,
-            'best_score': best_score,
-            'classification_report': report
-        }
-
-        print(f"Best parameters for {model_name}: {best_params}")
-        print(f"Best score for {model_name}: {best_score}")
-        print(f"Classification report for {model_name}:\n{report}")
-
-    return 
 
 def save_best_model(results,X_train, y_train, X_test, y_test):
     best_params = {
