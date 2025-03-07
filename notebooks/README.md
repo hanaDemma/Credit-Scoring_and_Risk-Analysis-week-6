@@ -64,6 +64,7 @@ The purpose of a credit scoring system is to classify borrowers into risk catego
       - Hyperparameter Tunning
 2. **Model Evaluation**
     - Assess model performance using **Accuracy**, **Precision**,**Recall**,**F1 Score**, **ROC-AUC**  metrics
+    
 # Development Instructions
 - Create a feature/task-5 Branch for development.
 - Commit progress regularly with clear and detailed commit messages.
@@ -72,12 +73,12 @@ The purpose of a credit scoring system is to classify borrowers into risk catego
 # Task 6: Modelling Model Serving API Call
 
 - Create a REST API to serve the trained machine-learning models for real-time predictions.
-**Choose a framework**:Select a suitable framework for building REST APIs 
-**Load the model**:Use the model from Task 4 to load the trained machine-learning model.
-**Define API endpoints**: Create API endpoints that accept input data and return predictions.
-**Handle requests**:Implement logic to receive input data, preprocess it, and make predictions using the loaded model.
-**Return predictions**: Format the predictions and return them as a response to the API call.
-**Deployment**: Deploy the API to a web server or cloud platform.
+- **Choose a framework**:Select a suitable framework for building REST APIs 
+- **Load the model**:Use the model from Task 4 to load the trained machine-learning model.
+- **Define API endpoints**: Create API endpoints that accept input data and return predictions.
+- **Handle requests**:Implement logic to receive input data, preprocess it, and make predictions using the loaded model.
+- **Return predictions**: Format the predictions and return them as a response to the API call.
+- **Deployment**: Deploy the API to a web server or cloud platform.
 
 # Development Instructions
 - Create a feature/task-6 Branch for development.
