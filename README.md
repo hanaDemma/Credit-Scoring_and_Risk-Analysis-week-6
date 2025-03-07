@@ -8,31 +8,38 @@ This project aims to develop a **credit scoring model** for Bati Bank to enable 
 CREDIT_SCORING_AND_RISK_ANALYSIS-WEEK6/
 │
 ├── .github/
-│
+
 ├── .week6/
-│
+
 ├── .notebooks/
+
 │   ├── exploratory_analysis.ipynb
+
 │   └── README.md
-│
+
 ├── .scripts/
+
 │   ├── data_cleaning.py
+
 │   ├── data_loader.py
+
 │   └── feature_engineering.py
+
 |   └── credit_risk_analysis.py
-│
+
+
 ├── .src/
-│
+
 ├── .tests/
-│
+
 ├── .gitignore
-│
+
 ├── app.py
-│
+
 ├── .Dockerfile
-│
+
 ├── README.md
-│
+
 └── requirements.txt
 
 
