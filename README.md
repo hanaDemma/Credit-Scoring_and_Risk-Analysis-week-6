@@ -11,13 +11,15 @@ CREDIT_SCORING_AND_RISK_ANALYSIS-WEEK6/
 
 ├── .week6/
 
-├── .notebooks/
+├── notebooks/
 
 │   ├── exploratory_analysis.ipynb
 
 │   └── README.md
 
-├── .scripts/
+├── screenshot 
+
+├── scripts/
 
 │   ├── data_cleaning.py
 
@@ -28,15 +30,19 @@ CREDIT_SCORING_AND_RISK_ANALYSIS-WEEK6/
 |   └── credit_risk_analysis.py
 
 
-├── .src/
+├── src/
+
+│   ├── frontend
+
+│   ├── models
+
+│   └── Dockerfile
+
+│   └── app.py
 
 ├── .tests/
 
 ├── .gitignore
-
-├── app.py
-
-├── .Dockerfile
 
 ├── README.md
 
@@ -49,6 +55,7 @@ CREDIT_SCORING_AND_RISK_ANALYSIS-WEEK6/
 - **Feature Engineering**: Creation of aggregate features and time-based features.
 - **Encoding**: One-hot and label encoding of categorical variables.
 - **Modeling**: Implementation of various machine learning algorithms to predict credit scores.
+- **Model serving and ApI calling**: serve the trained model for real time predictions.
 
 
 ## Technologies
